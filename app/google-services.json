@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "619361234645",
+    "firebase_url": "https://insnouts-d3852.firebaseio.com",
+    "project_id": "insnouts-d3852",
+    "storage_bucket": "insnouts-d3852.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:619361234645:android:1b2119362bdb9354c1fc5c",
+        "android_client_info": {
+          "package_name": "com.yrmew.insandouts"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "619361234645-4rvak5auc6qabmktglmifq4fhtq4e5bt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXLFQvWvjY-mHHD-n6bfuv-Szt5BZWqIo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "619361234645-4rvak5auc6qabmktglmifq4fhtq4e5bt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
