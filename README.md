@@ -24,8 +24,8 @@ Apesar de muitas features ainda estarem em um estágio inicial, o intuito é que
 1. Baixe o projeto.
 2. Faça a build do projeto no Android Studio.
 3. Linkar o aplicativo com algum projeto no Firebase.
-4a. Execute o projeto em um emulador.
-4b. Tranforme o projeto em um APK e transfira-o para um dispositivo mobile.
+4. Execute o projeto em um emulador.
+5. Tranforme o projeto em um APK e transfira-o para um dispositivo mobile.
 
 ## Autor
 Maurício Cândido 
