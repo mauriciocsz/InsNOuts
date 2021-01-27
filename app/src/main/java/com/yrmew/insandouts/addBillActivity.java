@@ -29,83 +29,93 @@ public class addBillActivity extends AppCompatActivity {
 
     FirebaseAuth mAuth = FirebaseAuth.getInstance();
     String user = mAuth.getCurrentUser().getUid();
-    int qnt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_bill);
 
+        Toast.makeText(this, ""+user, Toast.LENGTH_SHORT).show();
+
         RadioButton dividaBtn = findViewById(R.id.rb_dívida);
         RadioButton rendaBtn = findViewById(R.id.rB_renda);
         RadioGroup radioGroup = findViewById(R.id.rB_group);
+
         Button btnCriar = findViewById(R.id.btn_criar);
+
         EditText txt_nomeConta = findViewById(R.id.txt_nomeContaCriada);
 
+        //Toggles profit button and get its ID
         rendaBtn.toggle();
+        int rendaID = radioGroup.getCheckedRadioButtonId();
 
-        SQLiteDatabase myDB;
-        myDB = this.openOrCreateDatabase("db_insnouts", MODE_PRIVATE, null);
+        //Retrieves the token from the Local Database
+        SQLiteDatabase myDB = this.openOrCreateDatabase("db_insnouts", MODE_PRIVATE, null);
         Cursor c = myDB.rawQuery("SELECT * FROM tb_token" , null);
         int Column1 = c.getColumnIndex("token");
         c.moveToFirst();
         String tokenLocal = c.getString(Column1);
 
-
         btnCriar.setOnClickListener(V -> {
 
+                //Retrieves the bill's name
                 String nomeConta = txt_nomeConta.getText().toString();
 
+                //Checks if the bill has a name
                 if(!nomeConta.equals("")) {
 
-
+                    //Gets selected button ID
                     int checkedID = radioGroup.getCheckedRadioButtonId();
-                    int current;
 
-                    Log.d("","aaaaaa"+checkedID);
+                    //Tells if the current bill is either debt or profit
+                    int typeConta;
 
-                    Toast.makeText(this, ""+checkedID, Toast.LENGTH_SHORT).show();
-
-                    if (checkedID == 2131230952) {
-                        current = 1;
+                    // Uses the ID of the radio button to check which one is selected
+                    if (checkedID == rendaID) {
+                        typeConta = 1;
                     } else {
-                        current = -1;
+                        typeConta = -1;
                     }
 
-                    insertValues(nomeConta,current, tokenLocal);
 
-
+                    insertValues(nomeConta,typeConta, tokenLocal);
 
                 }else{
                     Toast.makeText(this, "Erro! Preencha todos campos e tente novamente!", Toast.LENGTH_SHORT).show();
                 }
 
         });
-
-
     }
 
     public void insertValues(String nomeConta, int typeConta, String tokenLocal){
 
+        // Sets a path for the Online Database
         DatabaseReference path = FirebaseDatabase.getInstance().getReference().child("Users").child(user);
 
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                String token = snapshot.child("token").getValue().toString();
 
+                //Gets "token" fom the Database
+                String token = snapshot.child("token").getValue().toString();
+                //Gets bills value from the Database
                 Integer qnt = snapshot.child("qnt").getValue(Integer.class);
+
+                //Condition that'll be used to confirm that both DBs are synchronized
                 boolean cond=false;
 
 
+                //Checks if both "tokens" match
                 if(token.equals(tokenLocal)){
+                    //Searches for an empty spot to fit the new bill in
                     for(int x=qnt;!cond;x++){
+                        // If we can retrieve the type from the Database, skip and go to the next spot
                         try{
-
-                            int ab = snapshot.child(x+"").child("type").getValue(Integer.class);
-
-                        }catch(Exception e){
+                            int retrievedTest = snapshot.child(x+"").child("type").getValue(Integer.class);
+                        }
+                        // If no value is retrieved that means this spot is vacant and we can fill it
+                        catch(Exception e){
 
                             cond=true;
                             path.child(x+"").child("type").setValue(typeConta);
@@ -136,7 +146,7 @@ public class addBillActivity extends AppCompatActivity {
         startActivity(intent);
 
 
-    }
+    } // Method responsible for Inserting the created bill
 
     @Override
     public void onBackPressed() {
@@ -144,6 +154,6 @@ public class addBillActivity extends AppCompatActivity {
         Intent intent = new Intent(addBillActivity.this, HomeActivity.class);
         startActivity(intent);
 
-    }
+    } // Returns to the previous page (Home)
 
 }
