@@ -40,19 +40,10 @@ public class editBillActivity_adapter extends ArrayAdapter<editBillActivity_bill
         nameBill.setText(getItem(position).getNameBill());
         typeBill.setText(getItem(position).getTypeBill());
 
-        btnBill.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                editBillActivity eBA = new editBillActivity();
-
-                //Toast.makeText(getContext(), ""+getItem(position).getIdBill(), Toast.LENGTH_SHORT).show();
-
-                eBA.deleteBill(getItem(position).getIdBill());
-            }
+        btnBill.setOnClickListener(v -> {
+            editBillActivity eBA = new editBillActivity();
+            eBA.deleteBill(getItem(position).getIdBill());
         });
-
-
-
         return convertView;
     }
 }

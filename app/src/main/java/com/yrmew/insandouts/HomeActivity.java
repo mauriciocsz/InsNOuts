@@ -39,11 +39,12 @@ public class HomeActivity extends AppCompatActivity {
 
 
     // TODO ADICIONAR modo View-Only
+    // TODO Checar mês e atualizar
+    // TODO Checar ano e atualizar
 
     String user = "";
     final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-    int dayCurrent=16, monthCurrent = 11;
-    Boolean internetConnection;
+    int dayCurrent, monthCurrent;
     SQLiteDatabase myDB;
     Integer qntty;
     Boolean oldDate = false;
@@ -77,6 +78,7 @@ public class HomeActivity extends AppCompatActivity {
 
         txt_data.setText(dayCurrent+"/"+monthCurrent);
 
+        //Date Listener for when the user inputs a Date at the calendar
         DatePickerDialog.OnDateSetListener mDateSetListener = (datePicker, year, month, day) -> {
 
             if(day!=Integer.parseInt(datas[0]) || month+1!=Integer.parseInt(datas[1])){
@@ -99,7 +101,8 @@ public class HomeActivity extends AppCompatActivity {
 
 
 
-        }; //Date Listener for when the user inputs a Date at the calendar
+        };
+        // Button to Return to Today's date
         returnButton.setOnClickListener(v ->{
 
             dayCurrent=Integer.parseInt(datas[0]);
@@ -109,7 +112,8 @@ public class HomeActivity extends AppCompatActivity {
             loadDailyLocal();
             returnButton.setVisibility(View.GONE);
 
-        }); // Button to Return to Today's date
+        });
+        // Go to "Insert Daily Bills" fragment
         btn_daily.setOnClickListener(v -> {
                 Intent intent = new Intent(HomeActivity.this, dailyUpdateActivity.class);
                 if(oldDate){
@@ -118,16 +122,19 @@ public class HomeActivity extends AppCompatActivity {
                 }
 
                 startActivity(intent);
-        }); // Abrir Fragment de Inserir Contas
+        });
+        // Go to "Add Bill" fragment
         imv_add.setOnClickListener(v -> {
                 Intent intent = new Intent(HomeActivity.this, addBillActivity.class);
                 startActivity(intent);
 
-        }); // Abrir Fragment de Criar Contas
+        });
+        // Go to "Edit Bill" fragment
         imv_edit.setOnClickListener(v -> {
                 Intent intent = new Intent(HomeActivity.this, editBillActivity.class);
                 startActivity(intent);
-        });// Abrir Fragment de Editar Contas
+        });
+        // Switch Between Monthly/Daily view
         btn_switch.setOnClickListener(v ->{
             if (txt_data.getText().toString().equals(dayCurrent+"/"+monthCurrent)) {
                 if (!oldDate)
@@ -143,19 +150,22 @@ public class HomeActivity extends AppCompatActivity {
                     loadDaily();
                 txt_data.setText(dayCurrent+"/"+monthCurrent);
             }
-        });// Switch Between Monthly/Daily view
+        });
+        // Choose another date to check values
         txt_data.setOnClickListener(v ->{
 
             DatePickerDialog dialog = new DatePickerDialog(HomeActivity.this, mDateSetListener, Integer.parseInt(datas[2]),Integer.parseInt(datas[1])-1,Integer.parseInt(datas[0]));
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.WHITE));
             dialog.show();
-        }); // Choose another date to check values
-        btn_logOut.setOnClickListener(v -> logOut()); // Logs Out
+        });
+        // Logs Out
+        btn_logOut.setOnClickListener(v -> logOut());
 
         checkTokens();
 
     }
 
+    // Check the client's Token and compares it to the Current one
     private void checkTokens(){
 
         //SQLiteDatabase myDB;
@@ -247,8 +257,9 @@ public class HomeActivity extends AppCompatActivity {
         rootRef.child("Users").child(user).addListenerForSingleValueEvent(valueEventListener);
 
 
-    } // Compara os Tokens do Client e do Server e chama "loadDailyLocal"
+    }
 
+    //Loads Daily Value based on the Local Database
     private void loadDailyLocal(){
 
         int soma=0;
@@ -266,8 +277,9 @@ public class HomeActivity extends AppCompatActivity {
 
         TextView saldoAtual = findViewById(R.id.txt_saldoAtual);
         saldoAtual.setText("R$"+soma+".00");
-    } //Usa o BD Local para carregar o valor diário
+    }
 
+    //Loads Monthly Value based on the Local Database
     private void loadMonthlyLocal(){
 
         int soma=0;
@@ -288,33 +300,9 @@ public class HomeActivity extends AppCompatActivity {
 
         TextView saldoAtual = findViewById(R.id.txt_saldoAtual);
         saldoAtual.setText("R$"+soma+".00");
-    } //Usa o BD Local para carregar o valor diário
+    }
 
-    /*public void callUpdateDaily(){
-
-        ConstraintLayout layoutDaily = findViewById(R.id.layout_main);
-
-        ValueEventListener valueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                Integer qnt = snapshot.getValue(Integer.class);
-
-                Intent intent = new Intent(HomeActivity.this, dailyUpdateActivity.class);
-                startActivity(intent);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        };
-        rootRef.child("Users").child(user).child("qnt").addListenerForSingleValueEvent(valueEventListener);
-
-
-
-    } //Chama dailyUpdateFragment*/
-
+    //Loads Monthly Value based on the Online Database
     public void loadMonth(){
 
         ValueEventListener valueEventListener = new ValueEventListener() {
@@ -355,6 +343,7 @@ public class HomeActivity extends AppCompatActivity {
 
     }
 
+    //Loads Daily Value based on the Online Database
     public void loadDaily(){
 
         ValueEventListener valueEventListener = new ValueEventListener() {
@@ -388,56 +377,14 @@ public class HomeActivity extends AppCompatActivity {
 
     }
 
+    //Converts a month's number to it's written counterpart
     private String getMonthName(int monthCurrent){
 
-        String currentName="";
-
-        switch(monthCurrent){
-            case 1:
-                currentName="Janeiro";
-                break;
-            case 2:
-                currentName="Fevereiro";
-                break;
-            case 3:
-                currentName="Março";
-                break;
-            case 4:
-                currentName="Abril";
-                break;
-            case 5:
-                currentName="Maio";
-                break;
-            case 6:
-                currentName="Junho";
-                break;
-            case 7:
-                currentName="Julho";
-                break;
-            case 8:
-                currentName="Agosto";
-                break;
-            case 9:
-                currentName="Setembro";
-                break;
-            case 10:
-                currentName="Outubro";
-                break;
-             case 11:
-                currentName="Novembro";
-                break;
-            case 12:
-                currentName="Dezembro";
-                break;
-
-
-        }
-
-        return currentName;
-
-
+        String[] Months = {"Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"};
+        return Months[monthCurrent-1];
     }
 
+    // Returns to the previous page (Home)
     @Override
     public void onBackPressed() {
 
@@ -446,9 +393,9 @@ public class HomeActivity extends AppCompatActivity {
 
     }
 
+    //Logs off the account
     private void logOut(){
 
-        FirebaseAuth mAuth;
         Intent intent = new Intent(HomeActivity.this, loginActivity.class);
         startActivity(intent);
         finish();

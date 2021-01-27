@@ -40,41 +40,45 @@ public class editBillActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit_bill);
 
 
+        //Cria um ArrayList de várias bills (editBillActivity)
         ArrayList<editBillActivity_bill> arrayList = new ArrayList<>();
+
         ListView list = findViewById(R.id.listView_editBill);
 
+
+        //Retrieves the token from the Local Database
         SQLiteDatabase myDB;
         myDB = this.openOrCreateDatabase("db_insnouts", MODE_PRIVATE, null);
         Cursor c = myDB.rawQuery("SELECT * FROM tb_token" , null);
         int Column1 = c.getColumnIndex("token");
         c.moveToFirst();
-         tokenLocal = c.getString(Column1);
-
+        tokenLocal = c.getString(Column1);
 
 
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
+                //Retrieves the quantity of bills
                  qnt = snapshot.child("qnt").getValue(Integer.class);
 
                 int y=0;
 
+                //Reads all bills amd get its values
                 for(int x=0;x<qnt+y;x++){
-
                     try{
-
                         String name = snapshot.child(""+x).child("name").getValue().toString();
                         String type;
-                        if (snapshot.child(""+x).child("type").getValue(Integer.class)==1){
+                        if (snapshot.child(""+x).child("type").getValue(Integer.class)==1)
                             type="Renda";
-                        }else
+                        else
                             type="Dívida";
 
+                        //Adds the current bill to the ArrayList
                         arrayList.add(new editBillActivity_bill(name,type,x));
 
-
-                    }catch (Exception e){
+                    }// If there's no bill in this spot (and not all bills were read) continue reading
+                    catch (Exception e){
                         y++;
                     }
 
@@ -92,9 +96,6 @@ public class editBillActivity extends AppCompatActivity {
         };
 
         FirebaseDatabase.getInstance().getReference().child("Users").child(user).addListenerForSingleValueEvent(valueEventListener);
-
-        //arrayList.add(new editBillActivity_bill("Renda","Dívida",0));
-        //arrayList.add(new editBillActivity_bill("Dívida","Renda",1));
 
 
         editBillActivity_adapter adapter = new editBillActivity_adapter(this, R.layout.activity_edit_bill_row,arrayList);
