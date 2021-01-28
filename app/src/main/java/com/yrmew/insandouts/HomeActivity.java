@@ -168,45 +168,54 @@ public class HomeActivity extends AppCompatActivity {
     // Check the client's Token and compares it to the Current one
     private void checkTokens(){
 
-        //SQLiteDatabase myDB;
         myDB = this.openOrCreateDatabase("db_insnouts", MODE_PRIVATE, null);
 
         Cursor c = myDB.rawQuery("SELECT * FROM tb_token" , null);
 
+        //Gets local database's Token and Columns quantity
         int Column1 = c.getColumnIndex("token");
         int Column2 = c.getColumnIndex("qnt");
-
         c.moveToFirst();
-
         String tokenLocal = c.getString(Column1);
         Integer qntLocal = c.getInt(Column2);
         qntty= qntLocal;
 
 
+        //Compares both local and online tokens
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 String token = snapshot.child("token").getValue().toString();
 
+
+                //If both tokens are equal, the user is up to date so load all bills
                 if(tokenLocal.equals(token)){
                     loadDailyLocal();
                 }
+
+                //If they differ somehow, the user's data is outdated and we need to alter his local database
                 else{
 
+                    //Gets the quantity of bills from the online database
                     Integer qnt = snapshot.child("qnt").getValue(Integer.class);
 
+                    //Re-Creates the entire database
                     myDB.execSQL("DROP TABLE tb_contas");
                     myDB.execSQL("CREATE TABLE IF NOT EXISTS tb_contas" + "(dia INTEGER)");
 
+                    //Adds columns for each existing bill
                     for(int x=0;x<qnt;x++){
                        myDB.execSQL("ALTER TABLE tb_contas ADD conta_"+(x+1)+" INTEGER");
                     }
 
-
+                    //Clears the database(?)
                     myDB.execSQL("DELETE FROM tb_contas");
 
 
+                    //TODO: Clean this part
+
+                    //Gets every bill value and inserts them all in the local database
                     for(int x=0;x<31;x++){
                         int[] values = new int[99];
                         String sqlReq = "INSERT INTO tb_contas VALUES ("+x;
@@ -241,10 +250,11 @@ public class HomeActivity extends AppCompatActivity {
                     }
                     myDB.execSQL("UPDATE tb_token SET token = '"+token+"', qnt="+qnt);
 
+                    //Checks both the local and online databases again
                     checkTokens();
 
                     // Load FB
-                } //Rewrite LocalDB data
+                }
 
             }
 
@@ -271,7 +281,6 @@ public class HomeActivity extends AppCompatActivity {
             int Column1 = c.getColumnIndex("conta_"+(x+1));
             c.moveToFirst();
             soma += c.getInt(Column1);
-            Log.d("adg",""+soma);
 
         }
 
@@ -293,7 +302,6 @@ public class HomeActivity extends AppCompatActivity {
             int Column1 = c.getColumnIndex("conta_"+(x+1));
             c.moveToFirst();
             soma += c.getInt(Column1);
-            Log.d("adg",""+soma);
 
             }
         }

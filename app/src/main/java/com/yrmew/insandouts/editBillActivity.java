@@ -45,7 +45,6 @@ public class editBillActivity extends AppCompatActivity {
 
         ListView list = findViewById(R.id.listView_editBill);
 
-
         //Retrieves the token from the Local Database
         SQLiteDatabase myDB;
         myDB = this.openOrCreateDatabase("db_insnouts", MODE_PRIVATE, null);
@@ -104,6 +103,9 @@ public class editBillActivity extends AppCompatActivity {
     }
 
 
+    //TODO Check if after deleting a bill you can still see it on the local database
+
+    //Deletes the selected Bill from both databases
     public void deleteBill(int billID){
 
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
@@ -131,6 +133,7 @@ public class editBillActivity extends AppCompatActivity {
 
     }
 
+    // Returns to the previous page (Home)
     @Override
     public void onBackPressed() {
 

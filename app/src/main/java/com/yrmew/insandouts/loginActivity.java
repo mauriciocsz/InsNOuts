@@ -34,19 +34,23 @@ public class loginActivity extends AppCompatActivity {
 
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
+        //Login button is clicked
         loginBtn.setOnClickListener(v -> {
 
+            //Get both the user's name and password
             String user = userName.getText().toString();
             String password = userPwd.getText().toString();
 
+            //If any of the parameters are empty, start login
             if(!TextUtils.isEmpty(user) && !TextUtils.isEmpty(password)){
-
                 mAuth.signInWithEmailAndPassword(user,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-
                         if(task.isSuccessful()){
+
+                            //Delete DataBase to reset it
                             deleteDB();
+
                             Intent intent = new Intent(loginActivity.this, criarDBActivity.class);
                             startActivity(intent);
                         }else{
@@ -59,8 +63,8 @@ public class loginActivity extends AppCompatActivity {
             }
         });
 
+        //Sign Up button is clicked
         cadastro.setOnClickListener(v ->{
-
             Intent intent = new Intent(loginActivity.this, cadastroActivity.class);
             startActivity(intent);
 
@@ -69,6 +73,7 @@ public class loginActivity extends AppCompatActivity {
 
     }
 
+    //Deletes the entire database for a new user
     private void deleteDB(){
         try{
             this.deleteDatabase("db_insouts");}

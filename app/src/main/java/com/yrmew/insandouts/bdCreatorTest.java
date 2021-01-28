@@ -17,6 +17,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Random;
 public class bdCreatorTest {
+
+    //TODO: Rename this whole class and add more methods
+
     //Generates a Token for Synchronization between the client and server values
     public String tokenGenerate(){
         String token="";
@@ -32,17 +35,6 @@ public class bdCreatorTest {
 
         return token;
 
-    }
-
-    //Checks the user's connection
-    public boolean connectionCheck(){
-        try {
-            InetAddress ipAddr = InetAddress.getByName("google.com");
-            //You can replace it with your name
-            return !ipAddr.equals("");
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     //Get today's date and return an Array
