@@ -21,29 +21,28 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Arrays;
+
 public class dailyUpdateActivity extends AppCompatActivity {
 
-    TextView nameBill;
+
     final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
 
-    int quantityOfBills=99, currentBill=0, billIndex=0;
-    Button finishBills;
+    int quantityOfBills=99, currentBill=0;
 
-    int[] billsValue = new int[quantityOfBills];
-    int[] billsIndex=  new int[quantityOfBills];
+    bill[] bills = new bill[quantityOfBills];
 
-    int dayCurrent=16, monthCurrent = 11;
+    int dayCurrent, monthCurrent;
 
     EditText valueBill;
+    TextView nextBill ;
+    TextView prevBill ;
+    Button finishBills;
+    TextView nameBill;
 
     String user = "";
 
     Boolean oldDate=false;
-
-    // TODO: Rename and change types of parameters
-    // TODO: Rewrite this code, it's a bit messy
-    // TODO: I need to change the way it works if I want to add new thing
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +51,9 @@ public class dailyUpdateActivity extends AppCompatActivity {
 
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         user = mAuth.getCurrentUser().getUid();
-
         bdCreatorTest bdCreatorTest = new bdCreatorTest();
 
+        //Get Today's date
         String[] dayValues= bdCreatorTest.getCurrentDate();
         dayCurrent = Integer.parseInt(dayValues[0]);
         monthCurrent = Integer.parseInt(dayValues[1]);
@@ -66,8 +65,7 @@ public class dailyUpdateActivity extends AppCompatActivity {
             monthCurrent = extras.getInt("month");
         }
 
-        getQuantity();
-
+        //Gets Local Token
         SQLiteDatabase myDB;
         myDB = this.openOrCreateDatabase("db_insnouts", MODE_PRIVATE, null);
         Cursor c = myDB.rawQuery("SELECT * FROM tb_token" , null);
@@ -75,14 +73,9 @@ public class dailyUpdateActivity extends AppCompatActivity {
         c.moveToFirst();
         String tokenLocal = c.getString(Column1);
 
-        //Set all bills as "0"
-        for (int x=0;x<quantityOfBills;x++){
-            billsValue[x]=0;
-        }
-
         nameBill = findViewById(R.id.txt_daily_nameBill);
-        TextView nextBill = findViewById(R.id.btn_nextBill);
-        TextView prevBill = findViewById(R.id.btn_prevBill);
+        nextBill = findViewById(R.id.btn_nextBill);
+        prevBill = findViewById(R.id.btn_prevBill);
         valueBill = findViewById(R.id.txt_valueBill);
         finishBills = findViewById(R.id.btn_finishBill);
 
@@ -91,32 +84,22 @@ public class dailyUpdateActivity extends AppCompatActivity {
         //Moves onto the next bill
         nextBill.setOnClickListener(v -> {
             //Saves current bill inside of an array and increases the counter
-            billsValue[currentBill]=Integer.parseInt(valueBill.getText().toString());
+            bills[currentBill].value = Integer.parseInt(valueBill.getText().toString());
             currentBill++;
-            valueBill.setText("");
-
-            //Calls bill changing method sending a 1 (move to next)
-            dailyUpdate(nextBill,prevBill,1);
-
+            loadBill();
         });
 
         //Moves onto the previous bill
         prevBill.setOnClickListener(v -> {
-
             //Saves current bill inside of an array and decreases the counter
-            billsValue[currentBill]=Integer.parseInt(valueBill.getText().toString());
+            bills[currentBill].value = Integer.parseInt(valueBill.getText().toString());
             currentBill--;
-            valueBill.setText("");
-
-            //Calls bill changing method sending a -1 (move to previous)
-            dailyUpdate(nextBill,prevBill,-1);
-
-
+            loadBill();
         });
 
         //Gets all bill's values and insert them into the Online DataBase
         finishBills.setOnClickListener(v -> {
-            billsValue[currentBill]=Integer.parseInt(valueBill.getText().toString());
+            bills[currentBill].value=Integer.parseInt(valueBill.getText().toString());
 
             ValueEventListener valueEventListener = new ValueEventListener() {
                 @Override
@@ -130,11 +113,13 @@ public class dailyUpdateActivity extends AppCompatActivity {
                         bdCreatorTest bdc = new bdCreatorTest();
                         rootRef.child("Users").child(user).child("token").setValue(bdc.tokenGenerate());
 
-                        //Inserts into the Online Database all values
-                        for (int x=0;x<quantityOfBills;x++){
-                            if(billsValue[x]>=0)
-                                rootRef.child("Users").child(user).child(billsIndex[x]+"").child(monthCurrent+"").child(dayCurrent+"").setValue(billsValue[x]);
+
+                        //Inserts all values into the Online Database
+                        for(int x=0;x<quantityOfBills;x++){
+                            if(bills[x].value>=0)
+                                rootRef.child("Users").child(user).child(bills[x].ID+"").child(monthCurrent+"").child(dayCurrent+"").setValue(bills[x].value);
                         }
+
                     }else
                         Toast.makeText(dailyUpdateActivity.this, "Erro de Sincronização! Atualizando valores...", Toast.LENGTH_SHORT).show();
                 }
@@ -151,99 +136,97 @@ public class dailyUpdateActivity extends AppCompatActivity {
 
         });
 
-        dailyUpdate(nextBill,prevBill,0);
+        loadData();
+
     }
 
-    private void getQuantity(){
+    //Loads all bills based on the Online DataBase
+    private void loadData(){
 
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                quantityOfBills = snapshot.getValue(Integer.class);
+                int billsFound=0;
 
-            }
+                //Sets the quantity of Bills based on the online database
+                quantityOfBills = snapshot.child("qnt").getValue(Integer.class);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        };
-        rootRef.child("Users").child(user).child("qnt").addListenerForSingleValueEvent(valueEventListener);
-
-    }
-
-    //Changes current selected bill
-    public void dailyUpdate(TextView nextBill, TextView prevBill, int counter){
-
-        //Sets current bill (inserted) value
-        if(billsValue[currentBill]>=0)
-            valueBill.setText(billsValue[currentBill]+"");
-
-        DatabaseReference path  = rootRef.child("Users").child(user);
-
-        //TODO: Instead of getting each value one by one it would be better to get them all at once (since you will eventually use them all)
-
-
-        //Retrieves data from the next bill
-        ValueEventListener valueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                Boolean cond=false;
-
-                for(int x=1;currentBill<quantityOfBills && !cond;x++){
-
+                for(int index=0;billsFound<quantityOfBills;index++){
                     try{
 
-                        //If you can retrieve the bills ID from the online database then this bill exists, therefore load it
-                        int ab = snapshot.child(billIndex+(x*counter)+"").child("type").getValue(Integer.class);
+                        //If you can retrieve the bills type from the online database then this bill exists, therefore save it
+                        int test = snapshot.child(index+"").child("type").getValue(Integer.class);
 
-                        cond=true;
-                        nameBill.setText(snapshot.child(billIndex+(x*counter)+"").child("name").getValue().toString());
+                        String name = snapshot.child(index+"").child("name").getValue().toString();
 
-                        //Saves current bill Index
-                        billIndex+=(x*counter);
-                        billsIndex[currentBill]=billIndex;
+                        //Creates a Bill object with its info
+                        bills[billsFound] = new bill(index,name,0);
+                        billsFound++;
 
-                    }catch (Exception e){
 
+                    }catch (Exception exception){
 
                     }
 
                 }
 
-            }
+                //Now that all bills are loaded, load the first one for the user
+                loadBill();
 
+            }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+
             }
         };
-        path.addListenerForSingleValueEvent(valueEventListener);
+
+        rootRef.child("Users").child(user).addListenerForSingleValueEvent(valueEventListener);
 
 
-        //Changes visibility of the buttons based on the current Bill
-        if(quantityOfBills-currentBill>1)
-            nextBill.setVisibility(View.VISIBLE);
-        else
+    }
+
+    //Loads the current bill
+    private void loadBill(){
+
+        nextBill.setVisibility(View.VISIBLE);
+        prevBill.setVisibility(View.VISIBLE);
+
+        int color = R.color.common_google_signin_btn_text_light_disabled;
+        finishBills.setActivated(false);
+
+
+        //Sets the text onscreen to the bill's info
+        nameBill.setText(bills[currentBill].name);
+        valueBill.setText(""+bills[currentBill].value);
+
+
+        //Controls all button's attributes
+        if(currentBill==quantityOfBills-1){
             nextBill.setVisibility(View.INVISIBLE);
-        if(currentBill>0)
-            prevBill.setVisibility(View.VISIBLE);
-        else
-            prevBill.setVisibility(View.INVISIBLE);
-
-
-        //Changes visibility of the Finish button base on the Current Bill
-        int color;
-        if(quantityOfBills-1==currentBill) {
             color = R.color.purple_500;
             finishBills.setActivated(true);
-        }else{
-            color = R.color.common_google_signin_btn_text_light_disabled;
-            finishBills.setActivated(false);
         }
+        else if(currentBill==0)
+            prevBill.setVisibility(View.INVISIBLE);
+
         finishBills.setBackgroundColor(getResources().getColor(color));
 
+
+    }
+
+    //Bill object that contains its ID, Name and Current Value
+    private class bill{
+
+        int ID;
+        String name;
+        int value;
+
+        public bill(int ID, String name, int value){
+            this.ID = ID;
+            this.name = name;
+            this.value = value;
+        }
 
     }
 
