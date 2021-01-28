@@ -40,6 +40,10 @@ public class dailyUpdateActivity extends AppCompatActivity {
 
     Boolean oldDate=false;
 
+    // TODO: Rename and change types of parameters
+    // TODO: Rewrite this code, it's a bit messy
+    // TODO: I need to change the way it works if I want to add new thing
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,12 +75,10 @@ public class dailyUpdateActivity extends AppCompatActivity {
         c.moveToFirst();
         String tokenLocal = c.getString(Column1);
 
-
+        //Set all bills as "0"
         for (int x=0;x<quantityOfBills;x++){
             billsValue[x]=0;
-        } // Seta todas bills como 0
-
-
+        }
 
         nameBill = findViewById(R.id.txt_daily_nameBill);
         TextView nextBill = findViewById(R.id.btn_nextBill);
@@ -86,22 +88,33 @@ public class dailyUpdateActivity extends AppCompatActivity {
 
         nameBill.setText("Carregando...");
 
+        //Moves onto the next bill
         nextBill.setOnClickListener(v -> {
+            //Saves current bill inside of an array and increases the counter
             billsValue[currentBill]=Integer.parseInt(valueBill.getText().toString());
             currentBill++;
             valueBill.setText("");
+
+            //Calls bill changing method sending a 1 (move to next)
             dailyUpdate(nextBill,prevBill,1);
 
-        }); // move to Next Bill
+        });
+
+        //Moves onto the previous bill
         prevBill.setOnClickListener(v -> {
 
+            //Saves current bill inside of an array and decreases the counter
             billsValue[currentBill]=Integer.parseInt(valueBill.getText().toString());
             currentBill--;
             valueBill.setText("");
+
+            //Calls bill changing method sending a -1 (move to previous)
             dailyUpdate(nextBill,prevBill,-1);
 
 
-        });// move to Previous Bill
+        });
+
+        //Gets all bill's values and insert them into the Online DataBase
         finishBills.setOnClickListener(v -> {
             billsValue[currentBill]=Integer.parseInt(valueBill.getText().toString());
 
@@ -111,9 +124,13 @@ public class dailyUpdateActivity extends AppCompatActivity {
 
                     String token = snapshot.child("token").getValue().toString();
 
+                    //Checks if both Local and Online tokens are the same before moving on
                     if(token.equals(tokenLocal)){
+                        //Generates a new Token
                         bdCreatorTest bdc = new bdCreatorTest();
-                        rootRef.child("Users").child(user).child("token").setValue(""+bdc.tokenGenerate());
+                        rootRef.child("Users").child(user).child("token").setValue(bdc.tokenGenerate());
+
+                        //Inserts into the Online Database all values
                         for (int x=0;x<quantityOfBills;x++){
                             if(billsValue[x]>=0)
                                 rootRef.child("Users").child(user).child(billsIndex[x]+"").child(monthCurrent+"").child(dayCurrent+"").setValue(billsValue[x]);
@@ -132,7 +149,7 @@ public class dailyUpdateActivity extends AppCompatActivity {
             Intent intent = new Intent (dailyUpdateActivity.this, criarDBActivity.class);
             startActivity(intent);
 
-        });// finish Daily Updating
+        });
 
         dailyUpdate(nextBill,prevBill,0);
     }
@@ -156,35 +173,39 @@ public class dailyUpdateActivity extends AppCompatActivity {
 
     }
 
+    //Changes current selected bill
     public void dailyUpdate(TextView nextBill, TextView prevBill, int counter){
 
-
+        //Sets current bill (inserted) value
         if(billsValue[currentBill]>=0)
             valueBill.setText(billsValue[currentBill]+"");
 
         DatabaseReference path  = rootRef.child("Users").child(user);
 
+        //TODO: Instead of getting each value one by one it would be better to get them all at once (since you will eventually use them all)
+
+
+        //Retrieves data from the next bill
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 Boolean cond=false;
 
-                //currentBill+=counter;
-
                 for(int x=1;currentBill<quantityOfBills && !cond;x++){
 
                     try{
 
+                        //If you can retrieve the bills ID from the online database then this bill exists, therefore load it
                         int ab = snapshot.child(billIndex+(x*counter)+"").child("type").getValue(Integer.class);
 
                         cond=true;
                         nameBill.setText(snapshot.child(billIndex+(x*counter)+"").child("name").getValue().toString());
 
+                        //Saves current bill Index
                         billIndex+=(x*counter);
                         billsIndex[currentBill]=billIndex;
 
-                        //Log.d("teste",x+"= "+ab);
                     }catch (Exception e){
 
 
@@ -200,6 +221,8 @@ public class dailyUpdateActivity extends AppCompatActivity {
         };
         path.addListenerForSingleValueEvent(valueEventListener);
 
+
+        //Changes visibility of the buttons based on the current Bill
         if(quantityOfBills-currentBill>1)
             nextBill.setVisibility(View.VISIBLE);
         else
@@ -210,21 +233,16 @@ public class dailyUpdateActivity extends AppCompatActivity {
             prevBill.setVisibility(View.INVISIBLE);
 
 
-
+        //Changes visibility of the Finish button base on the Current Bill
         int color;
         if(quantityOfBills-1==currentBill) {
             color = R.color.purple_500;
             finishBills.setActivated(true);
-
         }else{
             color = R.color.common_google_signin_btn_text_light_disabled;
             finishBills.setActivated(false);
         }
-
         finishBills.setBackgroundColor(getResources().getColor(color));
-
-
-        //Log.d("current",""+currentBill);
 
 
     }
