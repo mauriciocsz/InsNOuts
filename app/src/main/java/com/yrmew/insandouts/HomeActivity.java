@@ -38,9 +38,9 @@ import java.util.concurrent.CountDownLatch;
 public class HomeActivity extends AppCompatActivity {
 
 
-    // TODO ADICIONAR modo View-Only
-    // TODO Checar mês e atualizar
-    // TODO Checar ano e atualizar
+    //TODO: Settings page
+    // TODO View-Only mode
+    // TODO Check which Year is it so I can delete old values
 
     String user = "";
     final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
@@ -81,7 +81,18 @@ public class HomeActivity extends AppCompatActivity {
         //Date Listener for when the user inputs a Date at the calendar
         DatePickerDialog.OnDateSetListener mDateSetListener = (datePicker, year, month, day) -> {
 
-            if(day!=Integer.parseInt(datas[0]) || month+1!=Integer.parseInt(datas[1])){
+
+            // If the date selected is in the same month, Load the data Using the Local Database
+            if(day!=Integer.parseInt(datas[0]) && month+1==Integer.parseInt(datas[1])){
+                dayCurrent=day;
+                monthCurrent=month+1;
+                oldDate=true;
+                txt_data.setText(dayCurrent+"/"+monthCurrent);
+                loadDailyLocal();
+                returnButton.setVisibility(View.VISIBLE);
+            }
+            // If the date selected is in a different Month, use the online database
+            else if(month+1!=Integer.parseInt(datas[1])){
 
                 dayCurrent=day;
                 monthCurrent=month+1;
@@ -90,7 +101,9 @@ public class HomeActivity extends AppCompatActivity {
                 loadDaily();
                 returnButton.setVisibility(View.VISIBLE);
 
-            }else{
+            }
+            // Else if the date selected is the current date, remove the "OldDate" state
+            else{
                 dayCurrent=Integer.parseInt(datas[0]);
                 monthCurrent=Integer.parseInt(datas[1]);
                 oldDate=false;
@@ -136,15 +149,17 @@ public class HomeActivity extends AppCompatActivity {
         });
         // Switch Between Monthly/Daily view
         btn_switch.setOnClickListener(v ->{
+
+
             if (txt_data.getText().toString().equals(dayCurrent+"/"+monthCurrent)) {
-                if (!oldDate)
+                if (!oldDate || monthCurrent==Integer.parseInt(datas[1]))
                     loadMonthlyLocal();
                 else
                     loadMonth();
                 txt_data.setText(getMonthName(monthCurrent)+"");
             }
             else{
-                if(!oldDate)
+                if(!oldDate || monthCurrent==Integer.parseInt(datas[1]))
                     loadDailyLocal();
                 else
                     loadDaily();
@@ -192,10 +207,12 @@ public class HomeActivity extends AppCompatActivity {
                 //If both tokens are equal, the user is up to date so load all bills
                 if(tokenLocal.equals(token)){
                     loadDailyLocal();
+
                 }
 
                 //If they differ somehow, the user's data is outdated and we need to alter his local database
                 else{
+
 
                     //Gets the quantity of bills from the online database
                     Integer qnt = snapshot.child("qnt").getValue(Integer.class);
@@ -301,6 +318,7 @@ public class HomeActivity extends AppCompatActivity {
 
             int Column1 = c.getColumnIndex("conta_"+(x+1));
             c.moveToFirst();
+            //Log.d("Dia "+y,"conta "+x+ " = "+c.getInt(Column1));
             soma += c.getInt(Column1);
 
             }
@@ -313,21 +331,38 @@ public class HomeActivity extends AppCompatActivity {
     //Loads Monthly Value based on the Online Database
     public void loadMonth(){
 
+
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 Integer qnt = snapshot.child("qnt").getValue(Integer.class);
+
+                int[] billsID = new int[qnt];
+                int billsFound =0;
+
+                //Retrieves all bill's IDs
+                for(int x=0;billsFound<qnt;x++){
+
+                    try{
+                        int test = snapshot.child(x+"").child("type").getValue(Integer.class);
+                        billsID[billsFound]=x;
+                        billsFound++;
+                    }catch(Exception e){
+                    }
+
+                }
+
+                //Sum of all bill's values
                 final int[] billsSum = {0};
-                final int[] x = {0};
-                final int[] y = {0};
 
-
-                for ( x[0] = 0; x[0]<qnt; x[0]++){
-                    for(y[0]=0;y[0]<30;y[0]++) {
+                //Retrieves all values from the Online Database in the current month
+                for(int i=0;i<qnt;i++){
+                    for(int j=1;j<=31;j++){
 
                         try{
-                            billsSum[0]+= snapshot.child(x[0]+"").child(monthCurrent+"").child(y[0]+"").getValue(Integer.class) * snapshot.child(x[0]+"").child("type").getValue(Integer.class);
+                            billsSum[0]+= snapshot.child(billsID[i]+"").child(monthCurrent+"").child(j+"").getValue(Integer.class) * snapshot.child(billsID[i]+"").child("type").getValue(Integer.class);
+
                         }catch (Exception e){
 
                         }
@@ -354,6 +389,7 @@ public class HomeActivity extends AppCompatActivity {
     //Loads Daily Value based on the Online Database
     public void loadDaily(){
 
+
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -362,16 +398,33 @@ public class HomeActivity extends AppCompatActivity {
                 Integer qnt = snapshot.child("qnt").getValue(Integer.class);
 
                 final int[] billsSum = {0};
-                final int[] x = {0};
+                int[] billsID = new int[qnt];
+                int billsFound =0;
 
-                for ( x[0] = 0; x[0]<qnt; x[0]++){
+                //Retrieves all bill's IDs
+                for(int x=0;billsFound<qnt;x++){
+
                     try{
-                        billsSum[0]+= snapshot.child(x[0]+"").child(monthCurrent+"").child(dayCurrent+"").getValue(Integer.class) * snapshot.child(x[0]+"").child("type").getValue(Integer.class);
+                        int test = snapshot.child(x+"").child("type").getValue(Integer.class);
+                        billsID[billsFound]=x;
+                        billsFound++;
+                    }catch(Exception e){
+                    }
+
+                }
+
+                //Retrieves all values from the Online Database in the current day
+                for(int i=0;i<qnt;i++){
+                    try{
+                        billsSum[0]+= snapshot.child(billsID[i]+"").child(monthCurrent+"").child(dayCurrent+"").getValue(Integer.class) * snapshot.child(billsID[i]+"").child("type").getValue(Integer.class);
+
                     }catch (Exception e){
 
                     }
 
+
                 }
+
                 TextView saldoAtual = findViewById(R.id.txt_saldoAtual);
                 saldoAtual.setText("R$"+billsSum[0]+".00");
             }
@@ -384,6 +437,7 @@ public class HomeActivity extends AppCompatActivity {
         rootRef.child("Users").child(user).addListenerForSingleValueEvent(valueEventListener);
 
     }
+
 
     //Converts a month's number to it's written counterpart
     private String getMonthName(int monthCurrent){
