@@ -65,6 +65,8 @@ public class HomeActivity extends AppCompatActivity {
         ImageView btn_logOut = findViewById(R.id.btn_home_logout);
         TextView txt_data = findViewById(R.id.txt_diaMes);
 
+        Toast.makeText(this, getString(R.string.reply_title), Toast.LENGTH_SHORT).show();
+
 
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         user = mAuth.getCurrentUser().getUid();
@@ -177,6 +179,9 @@ public class HomeActivity extends AppCompatActivity {
         btn_logOut.setOnClickListener(v -> logOut());
 
         checkTokens();
+
+        Intent intent = new Intent(HomeActivity.this,settingsActivity.class);
+        startActivity(intent);
 
     }
 
