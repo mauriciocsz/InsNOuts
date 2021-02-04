@@ -35,8 +35,6 @@ public class addBillActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_bill);
 
-        Toast.makeText(this, ""+user, Toast.LENGTH_SHORT).show();
-
         RadioButton dividaBtn = findViewById(R.id.rb_dívida);
         RadioButton rendaBtn = findViewById(R.id.rB_renda);
         RadioGroup radioGroup = findViewById(R.id.rB_group);

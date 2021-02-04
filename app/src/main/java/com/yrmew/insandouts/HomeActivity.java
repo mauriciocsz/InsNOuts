@@ -59,13 +59,13 @@ public class HomeActivity extends AppCompatActivity {
         TextView returnButton = findViewById(R.id.txt_home_return);
         saldoAtual.setText("Carregando...");
         Button btn_daily = findViewById(R.id.btn_addDaily);
+        Button btn_settings = findViewById(R.id.btn_settings);
         ImageView imv_add = findViewById(R.id.imV_addConta);
         ImageView imv_edit = findViewById(R.id.imV_editarContas);
         ImageView btn_switch = findViewById(R.id.btn_home_switch);
         ImageView btn_logOut = findViewById(R.id.btn_home_logout);
         TextView txt_data = findViewById(R.id.txt_diaMes);
 
-        Toast.makeText(this, getString(R.string.reply_title), Toast.LENGTH_SHORT).show();
 
 
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -178,10 +178,16 @@ public class HomeActivity extends AppCompatActivity {
         // Logs Out
         btn_logOut.setOnClickListener(v -> logOut());
 
+        //Go to "Settings" activity
+        btn_settings.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, settingsActivity.class);
+            startActivity(intent);
+        });
+
+
+
         checkTokens();
 
-        Intent intent = new Intent(HomeActivity.this,settingsActivity.class);
-        startActivity(intent);
 
     }
 

@@ -4,6 +4,16 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_settings">settingsActivity</string>
 
+
+    <!-- Local token -->
+    <string name="Token">Default Token</string>
+    <!-- User's nickname -->
+    <string name="userName">Username</string>
+    <!-- Current UI theme -->
+    <string name="Theme">Default</string>
+
+    <string name="daysMonthly">30</string>
+
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>
     <string name="sync_header">Sync</string>

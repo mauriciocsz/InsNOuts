@@ -26,6 +26,19 @@
             tools:layout_editor_absoluteY="0dp">
 
 
+            <Button
+                android:id="@+id/btn_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="160dp"
+                android:layout_marginLeft="160dp"
+                android:text="Settings"
+                app:layout_constraintBottom_toTopOf="@+id/btn_home_switch"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.77"
+                app:layout_constraintStart_toEndOf="@+id/btn_home_logout"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <TextView
                 android:id="@+id/txt_saldoAtual"
                 android:layout_width="wrap_content"
