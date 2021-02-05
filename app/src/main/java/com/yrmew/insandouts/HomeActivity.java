@@ -5,9 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.preference.PreferenceManager;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -48,6 +50,7 @@ public class HomeActivity extends AppCompatActivity {
     SQLiteDatabase myDB;
     Integer qntty;
     Boolean oldDate = false;
+    SharedPreferences prefs;
 
 
     @Override
@@ -65,6 +68,8 @@ public class HomeActivity extends AppCompatActivity {
         ImageView btn_switch = findViewById(R.id.btn_home_switch);
         ImageView btn_logOut = findViewById(R.id.btn_home_logout);
         TextView txt_data = findViewById(R.id.txt_diaMes);
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 
 
@@ -130,18 +135,28 @@ public class HomeActivity extends AppCompatActivity {
         });
         // Go to "Insert Daily Bills" fragment
         btn_daily.setOnClickListener(v -> {
+
+            //Checks if viewOnly is activated
+            if(!prefs.getBoolean("viewOnly", false)) {
                 Intent intent = new Intent(HomeActivity.this, dailyUpdateActivity.class);
-                if(oldDate){
-                    intent.putExtra("day",dayCurrent);
-                    intent.putExtra("month",monthCurrent);
+                if (oldDate) {
+                    intent.putExtra("day", dayCurrent);
+                    intent.putExtra("month", monthCurrent);
                 }
 
                 startActivity(intent);
+            }else
+                Toast.makeText(this, "Desative o modo View-Only para acessar essa função!", Toast.LENGTH_SHORT).show();
         });
         // Go to "Add Bill" fragment
         imv_add.setOnClickListener(v -> {
+
+            //Checks if viewOnly is activated
+            if(!prefs.getBoolean("viewOnly", false)){
                 Intent intent = new Intent(HomeActivity.this, addBillActivity.class);
                 startActivity(intent);
+            }else
+                Toast.makeText(this, "Desative o modo View-Only para acessar essa função!", Toast.LENGTH_SHORT).show();
 
         });
         // Go to "Edit Bill" fragment

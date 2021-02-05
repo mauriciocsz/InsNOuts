@@ -3,6 +3,8 @@ package com.yrmew.insandouts;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,6 +15,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 public class settingsActivity extends AppCompatActivity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,14 +30,13 @@ public class settingsActivity extends AppCompatActivity {
                     .commit();
         }
 
-
         //Get preferences
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Boolean viewOnly = prefs.getBoolean("viewOnly", true);
         String username = prefs.getString("username", "user");
         String theme = prefs.getString("theme", "purple");
 
-        Toast.makeText(this, ""+viewOnly+" "+username+" "+theme, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, ""+viewOnly+" "+username+" "+theme, Toast.LENGTH_SHORT).show();
 
 
 

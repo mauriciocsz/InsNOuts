@@ -1,6 +1,7 @@
 package com.yrmew.insandouts;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.preference.PreferenceManager;
 
 
 import java.util.ArrayList;
@@ -41,8 +43,15 @@ public class editBillActivity_adapter extends ArrayAdapter<editBillActivity_bill
         typeBill.setText(getItem(position).getTypeBill());
 
         btnBill.setOnClickListener(v -> {
-            editBillActivity eBA = new editBillActivity();
-            eBA.deleteBill(getItem(position).getIdBill());
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+
+            //Checks if viewOnly is activated
+            if(!prefs.getBoolean("viewOnly", false)){
+                editBillActivity eBA = new editBillActivity();
+                eBA.deleteBill(getItem(position).getIdBill());
+            }else
+                Toast.makeText(mContext, "Desative o modo View-Only para acessar essa função!", Toast.LENGTH_SHORT).show();
+
         });
         return convertView;
     }

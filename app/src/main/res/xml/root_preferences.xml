@@ -25,6 +25,15 @@
             app:key="viewOnly"
             app:title="View-Only"
             app:summary="Stops the user from changing any values, letting him be only an observer" />
+        <EditTextPreference
+            android:id="@+id/edtx_month"
+            android:defaultValue="false"
+            android:key="monthQnt"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Month Quantity"
+            app:defaultValue="@string/daysMonthly"
+            app:useSimpleSummaryProvider="true" />
 
 
     </PreferenceCategory>

@@ -12,6 +12,7 @@
     <!-- Current UI theme -->
     <string name="Theme">Default</string>
 
+
     <string name="daysMonthly">30</string>
 
     <!-- Preference Titles -->
