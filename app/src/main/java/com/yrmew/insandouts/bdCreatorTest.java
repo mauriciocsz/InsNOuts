@@ -1,6 +1,8 @@
 package com.yrmew.insandouts;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.media.MediaRouter;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -16,6 +18,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Random;
+
+import javax.annotation.Nonnull;
+
 public class bdCreatorTest {
 
     //TODO: Rename this whole class and add more methods
@@ -47,7 +52,29 @@ public class bdCreatorTest {
         return dateValues;
     }
 
+   //Gets token callback
+    public interface SimpleCallback<String> {
+        void callback(String data);
+    }
+    //Get token data from firebase
+    public void getTokenData(@Nonnull SimpleCallback<String> finishedCallback){
+        ValueEventListener valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
 
+                //Gets token value
+                finishedCallback.callback(snapshot.child("token").getValue().toString());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        };
+
+        FirebaseDatabase.getInstance().getReference().child("Users").child("currentuser").addListenerForSingleValueEvent(valueEventListener);
+
+    }
 
 
 }

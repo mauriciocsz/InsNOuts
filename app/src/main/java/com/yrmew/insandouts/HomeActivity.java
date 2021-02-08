@@ -79,6 +79,17 @@ public class HomeActivity extends AppCompatActivity {
         bdCreatorTest bdCreatorTest = new bdCreatorTest();
         String[] datas = bdCreatorTest.getCurrentDate();
 
+
+        /*bdCreatorTest.getTokenData(new com.yrmew.insandouts.bdCreatorTest.SimpleCallback<String>() {
+            @Override
+            public void callback(String data) {
+                Toast.makeText(HomeActivity.this, ""+data, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        bdCreatorTest.getTokenData(data -> Toast.makeText(HomeActivity.this, ""+data, Toast.LENGTH_SHORT).show());
+    */
+
         dayCurrent=Integer.parseInt(datas[0]);
         monthCurrent=Integer.parseInt(datas[1]);
 
