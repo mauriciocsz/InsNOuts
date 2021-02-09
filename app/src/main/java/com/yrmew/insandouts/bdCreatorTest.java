@@ -56,8 +56,9 @@ public class bdCreatorTest {
     public interface SimpleCallback<String> {
         void callback(String data);
     }
+
     //Get token data from firebase
-    public void getTokenData(@Nonnull SimpleCallback<String> finishedCallback){
+    public static void getTokenData(@Nonnull SimpleCallback<String> finishedCallback){
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -72,8 +73,23 @@ public class bdCreatorTest {
             }
         };
 
-        FirebaseDatabase.getInstance().getReference().child("Users").child("currentuser").addListenerForSingleValueEvent(valueEventListener);
+        FirebaseDatabase.getInstance().getReference().child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(valueEventListener);
 
+    }
+
+     static abstract class Comando{
+
+        void getToken(){
+            getTokenData(data -> {
+                proceed(data);
+            });
+        }
+
+        abstract void proceed(Object data);
+    }
+
+    public void callComando(Comando comando, Object data){
+        comando.getToken();
     }
 
 

@@ -141,6 +141,9 @@ public class dailyUpdateActivity extends AppCompatActivity {
 
         loadData();
 
+
+        bdCreatorTest.callComando(new dailyComando(),"bruh");
+
     }
 
     //Loads all bills based on the Online DataBase
@@ -232,6 +235,18 @@ public class dailyUpdateActivity extends AppCompatActivity {
         }
 
     }
+
+    public class dailyComando extends bdCreatorTest.Comando {
+
+        public void proceed(Object data){
+            terminar(data);
+        }
+    }
+
+    private void terminar(Object data){
+        Toast.makeText(this, "letsago "+data, Toast.LENGTH_SHORT).show();
+    }
+
 
     @Override
     public void onBackPressed() {
