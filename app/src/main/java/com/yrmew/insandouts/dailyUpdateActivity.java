@@ -44,7 +44,6 @@ public class dailyUpdateActivity extends AppCompatActivity {
     TextView nameBill;
 
     String user = "";
-    Context context = this;
 
     Boolean oldDate=false;
 
@@ -68,14 +67,6 @@ public class dailyUpdateActivity extends AppCompatActivity {
             dayCurrent = extras.getInt("day");
             monthCurrent = extras.getInt("month");
         }
-
-        //Gets Local Token
-        SQLiteDatabase myDB;
-        myDB = this.openOrCreateDatabase("db_insnouts", MODE_PRIVATE, null);
-        Cursor c = myDB.rawQuery("SELECT * FROM tb_token" , null);
-        int Column1 = c.getColumnIndex("token");
-        c.moveToFirst();
-        String tokenLocal = c.getString(Column1);
 
         nameBill = findViewById(R.id.txt_daily_nameBill);
         nextBill = findViewById(R.id.btn_nextBill);
