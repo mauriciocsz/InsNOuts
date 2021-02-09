@@ -52,9 +52,9 @@ public class bdCreatorTest {
         return dateValues;
     }
 
-   //Gets token callback
+   //Gets token callback from Firebase
     public interface SimpleCallback<String> {
-        void callback(String data);
+        void callback(String tokenFB);
     }
 
     //Get token data from firebase
@@ -77,19 +77,24 @@ public class bdCreatorTest {
 
     }
 
-     static abstract class Comando{
+    //Class responsible for comparing the local and the online token
+    static abstract class tokenClass{
 
-        void getToken(){
-            getTokenData(data -> {
-                proceed(data);
+        //Receives both local token(data) and online token(tokenFB)
+        void getToken(Object data){
+            getTokenData(tokenFB -> {
+                //Sends the results between the comparison back to the class that called this method
+                proceed(tokenFB.equals(data));
             });
         }
 
-        abstract void proceed(Object data);
+        //Method implemented by the caller, which contains actions to be made after the token comparison finishes
+        abstract void proceed(Boolean data);
     }
 
-    public void callComando(Comando comando, Object data){
-        comando.getToken();
+    //Calls the tokenClass from the caller
+    public void callTokenClass(tokenClass tokenClass, Object data){
+        tokenClass.getToken(data);
     }
 
 

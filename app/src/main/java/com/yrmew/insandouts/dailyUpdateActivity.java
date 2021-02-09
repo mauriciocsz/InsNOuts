@@ -44,6 +44,7 @@ public class dailyUpdateActivity extends AppCompatActivity {
     TextView nameBill;
 
     String user = "";
+    Context context = this;
 
     Boolean oldDate=false;
 
@@ -102,48 +103,17 @@ public class dailyUpdateActivity extends AppCompatActivity {
 
         //Gets all bill's values and insert them into the Online DataBase
         finishBills.setOnClickListener(v -> {
+            //Saves the last bill's value
             bills[currentBill].value=Integer.parseInt(valueBill.getText().toString());
 
-            ValueEventListener valueEventListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
+            //Gets the current local token
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-                    String token = snapshot.child("token").getValue().toString();
-
-                    //Checks if both Local and Online tokens are the same before moving on
-                    if(token.equals(tokenLocal)){
-                        //Generates a new Token
-                        bdCreatorTest bdc = new bdCreatorTest();
-                        rootRef.child("Users").child(user).child("token").setValue(bdc.tokenGenerate());
-
-
-                        //Inserts all values into the Online Database
-                        for(int x=0;x<quantityOfBills;x++){
-                            if(bills[x].value>=0)
-                                rootRef.child("Users").child(user).child(bills[x].ID+"").child(monthCurrent+"").child(dayCurrent+"").setValue(bills[x].value);
-                        }
-
-                    }else
-                        Toast.makeText(dailyUpdateActivity.this, "Erro de Sincronização! Atualizando valores...", Toast.LENGTH_SHORT).show();
-                }
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            };
-
-            rootRef.child("Users").child(user).addListenerForSingleValueEvent(valueEventListener);
-
-            Intent intent = new Intent (dailyUpdateActivity.this, criarDBActivity.class);
-            startActivity(intent);
-
+            //Using the tokenClass method, compares both Tokens (Firebase and Local) and if they match, proceed.
+            bdCreatorTest.callTokenClass(new dailyToken(),prefs.getString("token","A"));
         });
 
         loadData();
-
-
-        bdCreatorTest.callComando(new dailyComando(),"bruh");
-
     }
 
     //Loads all bills based on the Online DataBase
@@ -236,17 +206,34 @@ public class dailyUpdateActivity extends AppCompatActivity {
 
     }
 
-    public class dailyComando extends bdCreatorTest.Comando {
+    //Sets all tokenClasses values so we can use it
+    public class dailyToken extends bdCreatorTest.tokenClass {
 
-        public void proceed(Object data){
-            terminar(data);
+        public void proceed(Boolean result){
+            if(result)
+                finishProcess();
+            else{
+                Toast.makeText(dailyUpdateActivity.this, "Erro de Sincronização! Atualizando valores...", Toast.LENGTH_SHORT).show();
+            }
+
+            Intent intent = new Intent (dailyUpdateActivity.this, criarDBActivity.class);
+            startActivity(intent);
         }
+
     }
 
-    private void terminar(Object data){
-        Toast.makeText(this, "letsago "+data, Toast.LENGTH_SHORT).show();
-    }
+    //Finishes inserting the values on the online database
+    private void finishProcess(){
+        bdCreatorTest bdc = new bdCreatorTest();
+        rootRef.child("Users").child(user).child("token").setValue(bdc.tokenGenerate());
 
+        //Inserts all values into the Online Database
+        for(int x=0;x<quantityOfBills;x++){
+            if(bills[x].value>=0)
+                rootRef.child("Users").child(user).child(bills[x].ID+"").child(monthCurrent+"").child(dayCurrent+"").setValue(bills[x].value);
+        }
+
+    }
 
     @Override
     public void onBackPressed() {

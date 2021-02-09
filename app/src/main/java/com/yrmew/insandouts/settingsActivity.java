@@ -36,10 +36,6 @@ public class settingsActivity extends AppCompatActivity {
         String username = prefs.getString("username", "user");
         String theme = prefs.getString("theme", "purple");
 
-        //Toast.makeText(this, ""+viewOnly+" "+username+" "+theme, Toast.LENGTH_SHORT).show();
-
-
-
 
     }
 
