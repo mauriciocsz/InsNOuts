@@ -39,9 +39,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class HomeActivity extends AppCompatActivity {
 
-
-    //TODO: Settings page
-    // TODO View-Only mode
+    // TODO: Check if no bugs were created from the new token retrieval method
     // TODO Check which Year is it so I can delete old values
 
     String user = "";
@@ -79,16 +77,6 @@ public class HomeActivity extends AppCompatActivity {
         bdCreatorTest bdCreatorTest = new bdCreatorTest();
         String[] datas = bdCreatorTest.getCurrentDate();
 
-
-        /*bdCreatorTest.getTokenData(new com.yrmew.insandouts.bdCreatorTest.SimpleCallback<String>() {
-            @Override
-            public void callback(String data) {
-                Toast.makeText(HomeActivity.this, ""+data, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        bdCreatorTest.getTokenData(data -> Toast.makeText(HomeActivity.this, ""+data, Toast.LENGTH_SHORT).show());
-    */
 
         dayCurrent=Integer.parseInt(datas[0]);
         monthCurrent=Integer.parseInt(datas[1]);
@@ -178,7 +166,6 @@ public class HomeActivity extends AppCompatActivity {
         // Switch Between Monthly/Daily view
         btn_switch.setOnClickListener(v ->{
 
-
             if (txt_data.getText().toString().equals(dayCurrent+"/"+monthCurrent)) {
                 if (!oldDate || monthCurrent==Integer.parseInt(datas[1]))
                     loadMonthlyLocal();
@@ -210,105 +197,88 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        //Gets preferences
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
+        //Opens the local database for future uses
+        myDB = this.openOrCreateDatabase("db_insnouts", MODE_PRIVATE, null);
 
-        checkTokens();
+        //Gets the quantity of bills locally
+        qntty = prefs.getInt("quantity",2);
 
+        //Compares both tokens
+        bdCreatorTest.callTokenClass(new homeToken(),prefs.getString("token","A"));
 
     }
 
-    // Check the client's Token and compares it to the Current one
-    private void checkTokens(){
+
+    //Clears the Database in order to re-load it using the Online database
+    private void resetDB(){
+
+        Toast.makeText(this, "Atualizando DB local...", Toast.LENGTH_SHORT).show();
 
         myDB = this.openOrCreateDatabase("db_insnouts", MODE_PRIVATE, null);
 
-        Cursor c = myDB.rawQuery("SELECT * FROM tb_token" , null);
-
-        //Gets local database's Token and Columns quantity
-        int Column1 = c.getColumnIndex("token");
-        int Column2 = c.getColumnIndex("qnt");
-        c.moveToFirst();
-        String tokenLocal = c.getString(Column1);
-        Integer qntLocal = c.getInt(Column2);
-        qntty= qntLocal;
-
-
-        //Compares both local and online tokens
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 String token = snapshot.child("token").getValue().toString();
+                //Gets the quantity of bills from the online database
+                Integer qnt = snapshot.child("qnt").getValue(Integer.class);
 
+                //Re-Creates the entire database
+                myDB.execSQL("DROP TABLE tb_contas");
+                myDB.execSQL("CREATE TABLE IF NOT EXISTS tb_contas" + "(dia INTEGER)");
 
-                //If both tokens are equal, the user is up to date so load all bills
-                if(tokenLocal.equals(token)){
-                    loadDailyLocal();
-
+                //Adds columns for each existing bill
+                for(int x=0;x<qnt;x++){
+                    myDB.execSQL("ALTER TABLE tb_contas ADD conta_"+(x+1)+" INTEGER");
                 }
 
-                //If they differ somehow, the user's data is outdated and we need to alter his local database
-                else{
+                //Clears the database(?)
+                myDB.execSQL("DELETE FROM tb_contas");
 
+                //Gets every bill value and inserts them all in the local database
+                for(int x=0;x<31;x++){
+                    int[] values = new int[99];
+                    String sqlReq = "INSERT INTO tb_contas VALUES ("+x;
+                    int z=0;
+                    for(int y=0;y<qnt+z;y++){
 
-                    //Gets the quantity of bills from the online database
-                    Integer qnt = snapshot.child("qnt").getValue(Integer.class);
+                        try{
 
-                    //Re-Creates the entire database
-                    myDB.execSQL("DROP TABLE tb_contas");
-                    myDB.execSQL("CREATE TABLE IF NOT EXISTS tb_contas" + "(dia INTEGER)");
+                            int ab = snapshot.child(y+"").child("type").getValue(Integer.class);
 
-                    //Adds columns for each existing bill
-                    for(int x=0;x<qnt;x++){
-                       myDB.execSQL("ALTER TABLE tb_contas ADD conta_"+(x+1)+" INTEGER");
-                    }
-
-                    //Clears the database(?)
-                    myDB.execSQL("DELETE FROM tb_contas");
-
-
-                    //TODO: Clean this part
-
-                    //Gets every bill value and inserts them all in the local database
-                    for(int x=0;x<31;x++){
-                        int[] values = new int[99];
-                        String sqlReq = "INSERT INTO tb_contas VALUES ("+x;
-                        int z=0;
-                        for(int y=0;y<qnt+z;y++){
-
-                            try{
-
-                                int ab = snapshot.child(y+"").child("type").getValue(Integer.class);
-
-                                try {
-                                    values[y] = snapshot.child("" + y).child(""+monthCurrent).child(""+x).getValue(Integer.class) * snapshot.child(y+"").child("type").getValue(Integer.class);
-                                }catch (Exception e){
-                                    values[y] = 0;
-                                }
-
-                                sqlReq+=", "+values[y];
-
-                            }catch(Exception e){
-
-                                z++;
-
+                            try {
+                                values[y] = snapshot.child("" + y).child(""+monthCurrent).child(""+x).getValue(Integer.class) * snapshot.child(y+"").child("type").getValue(Integer.class);
+                            }catch (Exception e){
+                                values[y] = 0;
                             }
+
+                            sqlReq+=", "+values[y];
+
+                        }catch(Exception e){
+
+                            z++;
 
                         }
 
-                        sqlReq+=");";
-
-                        myDB.execSQL(sqlReq);
-
-
                     }
-                    myDB.execSQL("UPDATE tb_token SET token = '"+token+"', qnt="+qnt);
 
-                    //Checks both the local and online databases again
-                    checkTokens();
+                    sqlReq+=");";
 
-                    // Load FB
+                    myDB.execSQL(sqlReq);
+
                 }
+
+                prefs.edit().putString("token",token).apply();
+                prefs.edit().putInt("quantity",qnt).apply();
+                //myDB.execSQL("UPDATE tb_token SET token = '"+token+"', qnt="+qnt);
+
+                //Checks both the local and online databases again
+                Intent intent = new Intent (HomeActivity.this, HomeActivity.class);
+                startActivity(intent);
 
             }
 
@@ -319,7 +289,6 @@ public class HomeActivity extends AppCompatActivity {
         };
 
         rootRef.child("Users").child(user).addListenerForSingleValueEvent(valueEventListener);
-
 
     }
 
@@ -475,12 +444,21 @@ public class HomeActivity extends AppCompatActivity {
 
     }
 
-
     //Converts a month's number to it's written counterpart
     private String getMonthName(int monthCurrent){
 
         String[] Months = {"Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"};
         return Months[monthCurrent-1];
+    }
+
+    //Sets all tokenClasses values so we can use it
+    public class homeToken extends bdCreatorTest.tokenClass{
+        void proceed(Boolean data) {
+            if(data)
+                loadDailyLocal();
+            else
+                resetDB();
+        }
     }
 
     // Returns to the previous page (Home)
